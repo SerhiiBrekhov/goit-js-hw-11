@@ -56,8 +56,10 @@ function screenPhoto(galleryItems) {
   makeInsertPhoto(photos);
 
   new SimpleLightbox('.gallery a');
-  // new SimpleLightbox('.gallery a', {captionDelay: 500,
-  //   doubleTapZoom: 1.3, rtl: true
+  // new SimpleLightbox('.gallery a', {
+  //   captionDelay: 500,
+  //   doubleTapZoom: 1.3,
+  //   rtl: true,
   // });
 }
 
