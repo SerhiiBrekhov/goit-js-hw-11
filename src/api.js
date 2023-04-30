@@ -12,7 +12,7 @@ async function runSearch(requestSearch) {
   try {
     const galleryItems = await axios.get(URL, parameters);
     parameters.page += 1;
-    console.log(galleryItems.data);
+    // console.log(galleryItems.data);
     return galleryItems.data;
   } catch (error) {
     console.log('ERROR: ' + error);

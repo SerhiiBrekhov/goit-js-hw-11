@@ -24,7 +24,7 @@ searchForm.addEventListener('submit', event => {
     elements: { searchQuery },
   } = event.currentTarget;
   runSearch(searchQuery.value).then(res => {
-    console.log(res);
+    // console.log(res);
     const { hits, total, totalHits } = res;
     if (hits.length === 0) {
       Notify.failure(
