@@ -1,94 +1,120 @@
-const axios = require('axios').default
+import SimpleLightbox from 'simplelightbox';
+import 'simplelightbox/dist/simple-lightbox.min.css';
+// import "../node_modules/simplelightbox/dist/simple-lightbox.min.css";
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
-// Описаний в документації
 
-import SimpleLightbox from "simplelightbox";
-import "simplelightbox/dist/simple-lightbox.min.css";
-import "../node_modules/simplelightbox/dist/simple-lightbox.min.css";
+import { parameters, runSearch } from './api';
+import { fadeEffect } from './preloader';
 
- new SimpleLightbox('.gallery a', {captionDelay: 500,
-    doubleTapZoom: 1.3, rtl: true
-  });
+const searchForm = document.querySelector('#search-form');
+const gallerySection = document.querySelector('.gallery');
+const loadMore = document.querySelector('.load-more');
+const closeBtn = document.querySelector('.close-btn');
 
-        const searchForm = document.querySelector(".search-form");
-        const gallerySection = document.querySelector(".gallery");
-        const loadMore = document.querySelector('.load-more');
-        let requestSearch = "";
+let requestSearch = '';
+loadMore.style.display = 'none';
+closeBtn.style.display = 'none';
 
-const parameters = {
-  API_KEY: '30227573-27b3490869524616035f18b3c',
-    page: 1,
-  per_page: 40,
-  safesearch: true,
-};
+searchForm.addEventListener('submit', event => {
+  event.preventDefault();
+  gallerySection.innerHTML = '';
+  loadMore.style.display = 'none';
 
-searchForm.addEventListener('submit', (event) => {
-    event.preventDefault();
-    const {
-    elements: { searchQuery }
+  const {
+    elements: { searchQuery },
   } = event.currentTarget;
-    requestSearch = searchQuery.value;
-    console.log(requestSearch);
-  runSearch(requestSearch).then(res => screenPhoto(res));
-  // { hits: [], total: number, totalHit: number }
+  wordSearch = searchQuery.value;
+  runSearch(wordSearch).then(res => {
+    console.log(res);
+    const { hits, total, totalHits } = res;
+    if (hits.length === 0) {
+      Notify.failure(
+        'Sorry, there are no images matching your search query. Please try again.',
+        {
+          timeout: 3000,
+        }
+      );
+      gallerySection.innerHTML = '';
+      return;
+    }
+    Notify.info(`Hooray! We found ${totalHits} images.`, { timeout: 3000 });
+    screenPhoto(res);
+    closeBtn.style.display = 'block';
+
+    if (hits.length >= 40) {
+      loadMore.style.display = 'block';
+    }
+
+    closeBtn.addEventListener('click', () => {
+      gallerySection.innerHTML = '';
+      closeBtn.style.display = 'none';
+    });
+  });
 });
 
-// var API_KEY = '30227573-27b3490869524616035f18b3c';
-// var URL = "https://pixabay.com/api/?key="+API_KEY+"&q="+encodeURIComponent('red roses');
-// $.getJSON(URL, function(data){
-// if (parseInt(data.totalHits) > 0)
-//     $.each(data.hits, function(i, hit){ console.log(hit.pageURL); });
-// else
-//     console.log('No hits');
-// });
-
-function runSearch(requestSearch) {
-  const URL = `https://pixabay.com/api/?key=${parameters.API_KEY}&q=${requestSearch}&page=${parameters.page}&per_page=${parameters.per_page}&safesearch=${parameters.safesearch}&image_type=image_type&orientation=horizontal`;
-  return axios.get(URL, parameters).then(r => {
-    parameters.page += 1;
-    const galleryItems = r.data
-    return galleryItems;
-  });
-};
-
 function screenPhoto(galleryItems) {
- const { hits: photos, total, totalHits } =  galleryItems;
-  if (photos.length === 0) {
-    console.log(photos.length);
-    Notify.info("Sorry, there are no images matching your search query. Please try again.", {
-    timeout: 3000,});
-    return;
-  }
-    Notify.info(`Hooray! We found ${totalHits} images.`, {timeout: 3000,});
-  // debugger
-  // console.log(photos);
-  const galleryInserted = makeInsertPhoto(photos);
-  gallerySection.insertAdjacentHTML('beforeend', galleryInserted);
+  const { hits: photos } = galleryItems;
+  makeInsertPhoto(photos);
+
+  new SimpleLightbox('.gallery a');
+  // new SimpleLightbox('.gallery a', {captionDelay: 500,
+  //   doubleTapZoom: 1.3, rtl: true
+  // });
 }
 
 function makeInsertPhoto(photos) {
-  return photos.map((card) => {
-    return `<div class="photo-card">
-  <a href= "${card.largeImageURL}"> <img src="${card.webformatURL}" alt="${card.tags}" loading="lazy" />
-  <div class="info">
-    <p class="info-item">
-      <b>Likes</b>${card.likes}
-    </p>
-    <p class="info-item">${card.views}
-      <b>Views</b>
-    </p>
-    <p class="info-item">${card.comments}
-      <b>Comments</b>
-    </p>
-    <p class="info-item">${card.downloads}
-      <b>Downloads</b>
-    </p>
-  </div>
-</div>`
-  }).join("");
-  // debugger
+  const markup = photos
+    .map(card => {
+      return `<div class="photo-card">
+        <a class="gallery-item" href="${card.largeImageURL}">
+          <img
+            class="gallery__image"
+            src="${card.webformatURL}"
+            alt="${card.tags}"
+            loading="lazy"
+        /></a>
+        <div class="info">
+          <div class="info__box">
+            <p class="info-item">
+              <b class="material-symbols-outlined">thumb_up</b>
+            </p>
+            <p class="info-counter">${card.likes.toLocaleString()}</p>
+          </div>
+          <div class="info__box">
+            <p class="info-item">
+              <b class="material-symbols-outlined">visibility</b>
+            </p>
+            <p class="info-counter">${card.views.toLocaleString()}</p>
+          </div>
+          <div class="info__box">
+            <p class="info-item">
+              <b class="material-symbols-outlined">forum</b>
+            </p>
+            <p class="info-counter">${card.comments.toLocaleString()}</p>
+          </div>
+          <div class="info__box">
+            <p class="info-item">
+              <b class="material-symbols-outlined">download</b>
+            </p>
+            <p class="info-counter">${card.downloads.toLocaleString()}</p>
+          </div>
+        </div>
+      </div>`;
+    })
+    .join('');
+  gallerySection.insertAdjacentHTML('beforeend', markup);
 }
 
-// gallerySection.addEventListener('click', openModal);
+loadMore.addEventListener('click', () => {
+  runSearch(requestSearch).then(res => {
+    let totalPages = res.totalHits / parameters.per_page;
+    screenPhoto(res);
+    if (parameters.page >= totalPages) {
+      loadMore.style.display = 'none';
+      Notify.info("We're sorry, but you've reached the end of search results.");
+      loadMore.style.display = 'block';
+    }
+  });
+});
 
-
+window.addEventListener('load', fadeEffect);
