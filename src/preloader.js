@@ -11,7 +11,7 @@ const fadeEffect = () => {
       clearInterval(fadeEffect);
       preloader.remove();
     }
-  }, 200);
+  }, 100);
 };
 
 export { fadeEffect };
