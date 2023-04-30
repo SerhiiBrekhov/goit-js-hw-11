@@ -23,8 +23,7 @@ searchForm.addEventListener('submit', event => {
   const {
     elements: { searchQuery },
   } = event.currentTarget;
-  wordSearch = searchQuery.value;
-  runSearch(wordSearch).then(res => {
+  runSearch(searchQuery.value).then(res => {
     console.log(res);
     const { hits, total, totalHits } = res;
     if (hits.length === 0) {
